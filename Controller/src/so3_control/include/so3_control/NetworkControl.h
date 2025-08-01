@@ -24,9 +24,8 @@
 
 #define ONE_G 9.81
 
-
+class NetworkControl
 {
-    class NetworkControl
 public:
     NetworkControl(ros::NodeHandle &node){
         nh_ = node;

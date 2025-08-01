@@ -39,3 +39,11 @@ exec bash"
 gnome-terminal --title="MAVROS" -- bash -c "
 roslaunch mavros px4.launch;
 exec bash"
+
+# 终端7: 运行控制示例程序
+gnome-terminal --title="Control Example" -- bash -c "
+cd ~/Desktop/YOPO/Controller;
+source devel/setup.bash;
+rosrun so3_control control_example;
+exec bash"
+
