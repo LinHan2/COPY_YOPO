@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Gazebo集成YOPO仿真launch文件 -->
+    
+    <!-- 仿真参数配置 -->
+    <arg name="mav_name" default="iris"/>
+    <arg name="world_name" default="$(find yopo_gazebo)/worlds/forest_environment.world"/>
+    <arg name="enable_logging" default="false"/>
+    <arg name="enable_ground_truth" default="true"/>
+    <arg name="log_file" default="$(arg mav_name)"/>
+    <arg name="debug" default="false"/>
+    <arg name="gui" default="true"/>
+    <arg name="paused" default="false"/>
+    <arg name="verbose" default="false"/>
+    
+    <!-- 无人机初始位置 -->
+    <arg name="x" default="0"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="1"/>
+    <arg name="R" default="0"/>
+    <arg name="P" default="0"/>
+    <arg name="Y" default="0"/>
+
+    <!-- 启动Gazebo -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(arg world_name)"/>
+        <arg name="debug" value="$(arg debug)"/>
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="verbose" value="$(arg verbose)"/>
+    </include>
+
+    <!-- 加载无人机模型 -->
+    <group ns="$(arg mav_name)">
+        <!-- 加载无人机描述 -->
+        <include file="$(find yopo_gazebo)/launch/spawn_iris_depth_camera.launch">
+            <arg name="mav_name" value="$(arg mav_name)"/>
+            <arg name="model" value="$(find yopo_gazebo)/urdf/iris_depth_camera.gazebo"/>
+            <arg name="enable_logging" value="$(arg enable_logging)"/>
+            <arg name="enable_ground_truth" value="$(arg enable_ground_truth)"/>
+            <arg name="log_file" value="$(arg log_file)"/>
+            <arg name="x" value="$(arg x)"/>
+            <arg name="y" value="$(arg y)"/>
+            <arg name="z" value="$(arg z)"/>
+            <arg name="R" value="$(arg R)"/>
+            <arg name="P" value="$(arg P)"/>
+            <arg name="Y" value="$(arg Y)"/>
+        </include>
+
+        <!-- MAVROS节点 - 连接Gazebo中的PX4固件 -->
+        <include file="$(find mavros)/launch/px4.launch">
+            <arg name="fcu_url" value="udp://:14540@localhost:14557"/>
+            <arg name="gcs_url" value=""/>
+            <arg name="tgt_system" value="1"/>
+            <arg name="tgt_component" value="1"/>
+            <arg name="log_output" value="screen"/>
+            <arg name="fcu_protocol" value="v2.0"/>
+            <arg name="respawn_mavros" value="false"/>
+        </include>
+
+        <!-- SO3控制器 - YOPO的核心控制器 -->
+        <include file="$(find so3_control)/launch/controller_network.launch">
+            <arg name="odom_topic" value="/$(arg mav_name)/ground_truth/odometry"/>
+            <arg name="so3_command_topic" value="/$(arg mav_name)/so3_command"/>
+            <arg name="is_simulation" value="true"/>
+        </include>
+
+        <!-- YOPO神经网络规划器 -->
+        <node name="yopo_planner" pkg="yopo" type="test_yopo_ros.py" output="screen">
+            <rosparam file="$(find yopo_gazebo)/config/yopo_gazebo_config.yaml"/>
+            <remap from="/depth_image" to="/$(arg mav_name)/camera/depth/image_raw"/>
+            <remap from="/sim/odom" to="/$(arg mav_name)/ground_truth/odometry"/>
+            <remap from="/so3_control/pos_cmd" to="/$(arg mav_name)/position_cmd"/>
+        </node>
+
+        <!-- 深度图像处理节点（如果需要） -->
+        <node name="depth_image_proc" pkg="nodelet" type="nodelet" 
+              args="manager" output="screen"/>
+        
+        <node name="depth_image_convert" pkg="nodelet" type="nodelet"
+              args="load depth_image_proc/convert_metric depth_image_proc" output="screen">
+            <remap from="image_raw" to="/$(arg mav_name)/camera/depth/image_raw"/>
+            <remap from="image" to="/$(arg mav_name)/camera/depth/image_processed"/>
+        </node>
+    </group>
+
+    <!-- RViz可视化 -->
+    <node name="rviz" pkg="rviz" type="rviz" output="screen" 
+          args="-d $(find yopo_gazebo)/rviz/yopo_gazebo.rviz"/>
+
+    <!-- 地面站（可选） -->
+    <node name="rqt_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure" output="screen"/>
+
+</launch>
