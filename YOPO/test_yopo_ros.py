@@ -366,7 +366,7 @@ if __name__ == "__main__":
                 'odom_topic': '/sim/odom',                   # 里程计话题
                 'depth_topic': '/depth_image',               # 深度图话题
                 'ctrl_topic': '/so3_control/pos_cmd',        # 控制器话题
-                'plan_from_reference': False,   # 从参考状态规划？位置控制器: True, 神经网络直接控制: False
+                'plan_from_reference':True,  # 从参考状态规划？位置控制器: True, 神经网络直接控制: False
                 'verbose': False,               # 打印耗时？
                 'visualize': True               # 可视化所有轨迹？(实飞改为False节省计算)
                 }

@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   nav_msgs
   quadrotor_msgs
+  std_srvs  # 添加这一行
   tf
   nodelet
   cmake_utils
@@ -36,10 +37,10 @@ target_link_libraries(so3_control_nodelet
 )
 
 # 普通PID控制器
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(control_example src/control_example.cpp)
-target_link_libraries(control_example
-  ${catkin_LIBRARIES}
-)
+target_link_libraries(control_example ${catkin_LIBRARIES} pthread)
 
 # 接收加速度直接转为姿态，并叠加干扰观测器作为内环输入
 add_executable(network_control_node src/NetworkControl.cpp src/network_control_node.cpp)

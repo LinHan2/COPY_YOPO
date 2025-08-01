@@ -30,6 +30,8 @@ if("${ARCH_FLAGS}" STREQUAL "")
     "  set(ARCH_FLAGS \"-gencode arch=compute_86,code=sm_86\")"
   )
 endif()
+# Manual override for RTX 4090 with CUDA 11.7 (use compatible architecture)
+set(ARCH_FLAGS "-gencode arch=compute_75,code=sm_75 -gencode arch=compute_80,code=sm_80 -gencode arch=compute_86,code=sm_86")
 message(WARNING "CUDA Architecture: ${ARCH_FLAGS}")
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} ${ARCH_FLAGS}")
 
@@ -54,17 +56,23 @@ include_directories(
 )
 
 add_executable(sensor_simulator src/test_simulator.cpp src/sensor_simulator.cpp)
-target_link_libraries(sensor_simulator ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} OpenMP::OpenMP_CXX yaml-cpp)
+target_link_libraries(sensor_simulator ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} OpenMP::OpenMP_CXX yaml-cpp /usr/lib/x86_64-linux-gnu/libusb-1.0.so)
 target_compile_definitions(sensor_simulator PRIVATE CONFIG_FILE_PATH="${CMAKE_SOURCE_DIR}/config/config.yaml")
 
 
 cuda_add_library(raycast_cuda src/sensor_simulator.cu)
-target_link_libraries(raycast_cuda ${CUDA_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(raycast_cuda ${CUDA_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} /usr/lib/x86_64-linux-gnu/libusb-1.0.so)
 
 add_executable(sensor_simulator_cuda src/test_simulator_cuda.cpp src/maps.cpp src/perlinnoise.cpp)
-target_link_libraries(sensor_simulator_cuda ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} raycast_cuda yaml-cpp)
+target_link_libraries(sensor_simulator_cuda ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} raycast_cuda yaml-cpp /usr/lib/x86_64-linux-gnu/libusb-1.0.so)
+set_target_properties(sensor_simulator_cuda PROPERTIES 
+    INSTALL_RPATH "$ORIGIN/../../../devel/lib:/usr/lib/x86_64-linux-gnu"
+    BUILD_WITH_INSTALL_RPATH TRUE)
 target_compile_definitions(sensor_simulator_cuda PRIVATE CONFIG_FILE_PATH="${CMAKE_SOURCE_DIR}/config/config.yaml")
 
 add_executable(dataset_generator src/dataset_generator.cpp src/maps.cpp src/perlinnoise.cpp)
-target_link_libraries(dataset_generator ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} raycast_cuda yaml-cpp)
+target_link_libraries(dataset_generator ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} raycast_cuda yaml-cpp /usr/lib/x86_64-linux-gnu/libusb-1.0.so)
+set_target_properties(dataset_generator PROPERTIES 
+    INSTALL_RPATH "$ORIGIN/../../../devel/lib:/usr/lib/x86_64-linux-gnu"
+    BUILD_WITH_INSTALL_RPATH TRUE)
 target_compile_definitions(dataset_generator PRIVATE CONFIG_FILE_PATH="${CMAKE_SOURCE_DIR}/config/config.yaml")

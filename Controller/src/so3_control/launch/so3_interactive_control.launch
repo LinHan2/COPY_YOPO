@@ -1,0 +1,25 @@
+<launch>
+    <!-- 参数设置 -->
+    <arg name="use_conservative_limits" default="false" />
+    <arg name="max_velocity" default="3.0" />
+    <arg name="max_acceleration" default="5.0" />
+    <arg name="max_yaw_rate" default="1.57" />
+    <arg name="visualize" default="true" />
+    
+    <!-- 启动SO3仿真环境 -->
+    <include file="$(find so3_quadrotor_simulator)/launch/simulator_position_control.launch" />
+    
+    <!-- 启动交互式控制器 -->
+    <node pkg="so3_control" type="control_example" name="so3_interactive_controller" output="screen">
+        <param name="max_velocity" value="$(arg max_velocity)" />
+        <param name="max_acceleration" value="$(arg max_acceleration)" />
+        <param name="max_yaw_rate" value="$(arg max_yaw_rate)" />
+        <param name="use_conservative_limits" value="$(arg use_conservative_limits)" />
+    </node>
+    
+    <!-- 可选：RVIZ可视化 -->
+    <node pkg="rviz" type="rviz" name="quadrotor_rviz" 
+          args="-d $(find so3_control)/config/quadrotor_control.rviz" 
+          if="$(arg visualize)" required="false" />
+    
+</launch>
