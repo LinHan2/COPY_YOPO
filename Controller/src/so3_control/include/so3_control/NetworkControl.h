@@ -32,10 +32,9 @@ public:
 
         so3_controller_.setMass(mass_);
         disturbance_observer_ = HGDO(control_dt_);
-
         nh_.param("is_simulation", is_simulation_, false);
         nh_.param("use_disturbance_observer", use_disturbance_observer_, false);
-        nh_.param("hover_thrust", hover_thrust_, 0.4);
+        nh_.param("hover_thrust", hover_thrust_, 0.5);
         nh_.param("kx_xy", kx_xy, 5.7);
         nh_.param("kx_z", kx_z, 6.2);
         nh_.param("kv_xy", kv_xy, 3.4);

@@ -54,6 +54,7 @@ Visualization Manager:
     - Class: rviz/Image
       Enabled: true
       Image Topic: /depth_image
+      #Image Topic: /camera/depth/image_rect_raw
       Max Value: 1
       Median window: 5
       Min Value: 0

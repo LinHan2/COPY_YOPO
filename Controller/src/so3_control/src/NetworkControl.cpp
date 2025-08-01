@@ -316,17 +316,8 @@ void NetworkControl::pub_SO3_command(Eigen::Vector3d ref_acc, double ref_yaw, do
     last_thrust_ = thrust_norm;
 }
 
-/**
- * @brief 限制加速度指令
- * 
- * 对输入的加速度进行安全限制，防止过大的加速度指令导致飞行器失控。
- * 当前实现中该函数被禁用（直接返回），如需要可以取消注释来启用加速度限制。
- * 
- * @param acc 待限制的加速度向量（引用传递，会被直接修改）
- */
 void NetworkControl::limite_acc(Eigen::Vector3d &acc){
-    return;  // 如需要可启用限制功能
-    // 限制x、y方向加速度在±8.0 m/s²以内
+    return;  // limited if needed
     acc[0] = std::max(-8.0, std::min(acc[0], 8.0));
     acc[1] = std::max(-8.0, std::min(acc[1], 8.0));
     // 限制z方向加速度在±4.0 m/s²以内
@@ -366,7 +357,7 @@ void NetworkControl::network_cmd_callback(const quadrotor_msgs::PositionCommand:
     
     // 使用扰动观测器估计外部扰动
     disturbance_observer_.HGDO_ext_force_ob(last_des_acc_, cur_vel_, dis_acc_);
-    // ROS_INFO_THROTTLE(0.5, "dis_acc: %.3f, %.3f, %.3f", dis_acc_.x(), dis_acc_.y(), dis_acc_.z());
+    ROS_INFO_THROTTLE(0.5, "dis_acc: %.3f, %.3f, %.3f", dis_acc_.x(), dis_acc_.y(), dis_acc_.z());
     // std::cout << "dis_acc: " << dis_acc_.transpose() << std::endl;
 
     Eigen::Vector3d att_acc;
@@ -510,7 +501,6 @@ void NetworkControl::timerCallback(const ros::TimerEvent &)
         disturbance_observer_.HGDO_ext_force_ob(last_des_acc_, cur_vel_, dis_acc_);
         // ROS_INFO_THROTTLE(1.0, " dis_acc: (%f, %f, %f)", dis_acc_.x(), dis_acc_.y(), dis_acc_.z());
     }
-
     last_des_acc_ = att_acc;
     
     // 记录日志
@@ -553,9 +543,8 @@ void NetworkControl::takeoff_land_thread(quadrotor_msgs::SetTakeoffLand::Request
         }
         sleep(1);
 
-        // 2. 缓慢上升
-        double takeoff_vel = 0.8;    // 起飞速度 0.8 m/s
-        double takeoff_ddz = takeoff_vel * control_dt_;  // 每个控制周期的高度增量
+        double takeoff_vel = 0.8;
+        double takeoff_ddz = takeoff_vel * control_dt_;
         ros::Rate takeoff_loop(1 / control_dt_);
         
         std::cout << "takeoff altitude: " << takeoff_altitude << " m" << std::endl;
