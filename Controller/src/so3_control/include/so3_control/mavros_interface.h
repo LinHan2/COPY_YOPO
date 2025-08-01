@@ -6,12 +6,10 @@
 #include <stdlib.h>
 #include <string>
 #include <iostream>
-
 #include <mavros_msgs/AttitudeTarget.h>
 #include <mavros_msgs/State.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/CommandBool.h>
-
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 

@@ -41,7 +41,7 @@ int main(int argc, char **argv)
       cmd.position.x = std::numeric_limits<float>::quiet_NaN(); // lower-order commands must be disabled by nan
       cmd.position.y = std::numeric_limits<float>::quiet_NaN(); // lower-order commands must be disabled by nan
       cmd.position.z = std::numeric_limits<float>::quiet_NaN(); // lower-order commands must be disabled by nan
-      cmd.velocity.x = -1.0;
+      cmd.velocity.x = 0.0;
       cmd.velocity.y = 0.0;
       cmd.velocity.z = 0.0;
       cmd_pub.publish(cmd);

@@ -218,9 +218,9 @@ void NetworkControl::pub_SO3_command(Eigen::Vector3d ref_acc, double ref_yaw, do
     mavros_interface_.pub_att_thrust_cmd(quat_des, thrust_norm);
     last_thrust_ = thrust_norm;
 }
-
+//加速度限制
 void NetworkControl::limite_acc(Eigen::Vector3d &acc){
-    return;  // limited if needed
+    // return;  // limited if needed
     acc[0] = std::max(-8.0, std::min(acc[0], 8.0));
     acc[1] = std::max(-8.0, std::min(acc[1], 8.0));
     acc[2] = std::max(-4.0, std::min(acc[2], 4.0));
@@ -245,7 +245,7 @@ void NetworkControl::network_cmd_callback(const quadrotor_msgs::PositionCommand:
     double des_yaw = cmd->yaw;
     
     disturbance_observer_.HGDO_ext_force_ob(last_des_acc_, cur_vel_, dis_acc_);
-    // ROS_INFO_THROTTLE(0.5, "dis_acc: %.3f, %.3f, %.3f", dis_acc_.x(), dis_acc_.y(), dis_acc_.z());
+    ROS_INFO_THROTTLE(0.5, "dis_acc: %.3f, %.3f, %.3f", dis_acc_.x(), dis_acc_.y(), dis_acc_.z());
     // std::cout << "dis_acc: " << dis_acc_.transpose() << std::endl;
 
     Eigen::Vector3d att_acc;
@@ -324,7 +324,6 @@ void NetworkControl::timerCallback(const ros::TimerEvent &)
         disturbance_observer_.HGDO_ext_force_ob(last_des_acc_, cur_vel_, dis_acc_);
         // ROS_INFO_THROTTLE(1.0, " dis_acc: (%f, %f, %f)", dis_acc_.x(), dis_acc_.y(), dis_acc_.z());
     }
-
     last_des_acc_ = att_acc;
     if (record_log_)
         recordLog(cur_vel_, cur_acc_, att_acc, dis_acc_, cur_yaw_, des_yaw_);
@@ -351,7 +350,7 @@ void NetworkControl::takeoff_land_thread(quadrotor_msgs::SetTakeoffLand::Request
         }
         sleep(1);
 
-        double takeoff_vel = 0.8;
+        double takeoff_vel = 0.3;
         double takeoff_ddz = takeoff_vel * control_dt_;
         ros::Rate takeoff_loop(1 / control_dt_);
         std::cout << "takeoff altitude: " << takeoff_altitude << " m" << std::endl;

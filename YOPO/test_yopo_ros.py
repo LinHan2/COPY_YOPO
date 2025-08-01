@@ -122,6 +122,7 @@ class YopoNet:
         pos = np.array((self.odom.pose.pose.position.x, self.odom.pose.pose.position.y, self.odom.pose.pose.position.z))
         if np.linalg.norm(pos - self.goal) < 5 and not self.arrive:
             print("Arrive!")
+            print(f"Current Position: ({pos[0]:.1f}, {pos[1]:.1f}, {pos[2]:.1f})")
             self.arrive = True
 
     def process_odom(self):
@@ -362,14 +363,17 @@ def main():
 
     settings = {'use_tensorrt': args.use_tensorrt,
                 'goal': [50, 0, 2],      # 目标点位置
-                'env': 'simulation',     # 深度图来源 ('435' or 'simulation', 和深度单位有关)
+                'env': '435',     # 深度图来源 ('435' or 'simulation', 和深度单位有关)
+                #  'env': 'simulation', 
                 'pitch_angle_deg': -0,   # 相机俯仰角(仰为负)
-                'odom_topic': '/sim/odom',                   # 里程计话题
-                'depth_topic': '/depth_image',               # 深度图话题
+                'odom_topic': '/vins_estimator/odometry',   
+                #  'odom_topic': '/sim/odom',                 # 里程计话题
+                'depth_topic': '/camera/depth/image_rect_raw',
+                # 'depth_topic': '/depth_image',                # 深度图话题
                 'ctrl_topic': '/so3_control/pos_cmd',        # 控制器话题
                 'plan_from_reference': False,   # 从参考状态规划？位置控制器: True, 神经网络直接控制: False
                 'verbose': False,               # 打印耗时？
-                'visualize': True               # 可视化所有轨迹？(实飞改为False节省计算)
+                'visualize': False             # 可视化所有轨迹？(实飞改为False节省计算)
                 }
     YopoNet(settings, weight)
 
